@@ -1,0 +1,1245 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>赛博孔明 · 数字幕府</title>
+<style>
+:root{
+  --bg:#070A0E; --bg2:#0B1017; --panel:#0F151D; --panel2:#131B25; --panel3:#182131;
+  --line:rgba(255,255,255,.07); --line2:rgba(255,255,255,.13);
+  --tx:#E7EEF5; --tx2:#8C9AA9; --tx3:#5D6B7A;
+  --gold:#E8B45A; --jade:#3FD9B0; --blue:#5AA9E6; --violet:#A78BFA; --pink:#F0A6C0; --red:#E4574C;
+  --mono:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,monospace;
+  --sans:-apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
+  background:var(--bg); color:var(--tx); font-family:var(--sans);
+  font-size:14px; line-height:1.6; -webkit-font-smoothing:antialiased;
+  display:flex; overflow:hidden;
+}
+body::before{
+  content:""; position:fixed; inset:0; z-index:0; pointer-events:none;
+  background:
+    radial-gradient(900px 500px at 78% -12%, rgba(63,217,176,.10), transparent 60%),
+    radial-gradient(700px 420px at 8% 105%, rgba(232,180,90,.07), transparent 60%),
+    linear-gradient(rgba(255,255,255,.018) 1px, transparent 1px) 0 0/100% 34px,
+    linear-gradient(90deg, rgba(255,255,255,.018) 1px, transparent 1px) 0 0/34px 100%;
+}
+::selection{background:rgba(63,217,176,.28)}
+::-webkit-scrollbar{width:10px;height:10px}
+::-webkit-scrollbar-thumb{background:rgba(255,255,255,.12);border-radius:8px;border:3px solid transparent;background-clip:content-box}
+::-webkit-scrollbar-track{background:transparent}
+
+/* ---------- sidebar ---------- */
+.sidebar{
+  position:relative; z-index:5; width:86px; flex:0 0 86px; height:100%;
+  background:rgba(9,13,19,.86); border-right:1px solid var(--line);
+  display:flex; flex-direction:column; align-items:center; padding:16px 0 14px;
+  backdrop-filter:blur(14px);
+}
+.seal{
+  width:44px;height:44px;border-radius:13px;display:grid;place-items:center;
+  font-size:20px;font-weight:700;color:#0A0E13;letter-spacing:1px;
+  background:linear-gradient(145deg,var(--gold),#C98F32);
+  box-shadow:0 0 0 1px rgba(232,180,90,.4),0 8px 22px rgba(232,180,90,.18);
+  margin-bottom:6px;
+}
+.brand-sub{font-size:9px;color:var(--tx3);letter-spacing:.16em;margin-bottom:22px;font-family:var(--mono)}
+.nav{display:flex;flex-direction:column;gap:4px;width:100%;padding:0 8px}
+.nav-item{
+  height:58px;border-radius:11px;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:2px;cursor:pointer;color:var(--tx3);border:1px solid transparent;transition:.18s;user-select:none;
+}
+.nav-item .ni{font-size:16px;line-height:1;font-weight:600}
+.nav-item .nl{font-size:10.5px;letter-spacing:.04em}
+.nav-item:hover{color:var(--tx2);background:rgba(255,255,255,.035)}
+.nav-item.on{color:var(--gold);background:rgba(232,180,90,.09);border-color:rgba(232,180,90,.24)}
+.side-foot{margin-top:auto;display:flex;flex-direction:column;align-items:center;gap:6px}
+.pulse{width:7px;height:7px;border-radius:50%;background:var(--jade);box-shadow:0 0 0 0 rgba(63,217,176,.5);animation:pulse 2.4s infinite}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(63,217,176,.45)}70%{box-shadow:0 0 0 7px rgba(63,217,176,0)}100%{box-shadow:0 0 0 0 rgba(63,217,176,0)}}
+.side-foot span{font-size:9px;color:var(--tx3);writing-mode:vertical-rl;letter-spacing:.2em;font-family:var(--mono)}
+
+/* ---------- shell ---------- */
+.shell{position:relative;z-index:2;flex:1;display:flex;flex-direction:column;min-width:0;height:100%}
+.topbar{
+  height:64px;flex:0 0 64px;display:flex;align-items:center;gap:18px;padding:0 26px;
+  border-bottom:1px solid var(--line);background:rgba(8,12,17,.6);backdrop-filter:blur(16px);
+}
+.tb-title{font-size:15px;font-weight:600;letter-spacing:.02em;white-space:nowrap}
+.tb-title em{font-style:normal;color:var(--tx3);font-weight:400;font-size:12.5px;margin-left:9px}
+.tb-search{
+  flex:1;max-width:300px;height:34px;border-radius:9px;background:rgba(255,255,255,.035);
+  border:1px solid var(--line);display:flex;align-items:center;gap:8px;padding:0 11px;color:var(--tx3);
+}
+.tb-search input{flex:1;background:none;border:0;outline:0;color:var(--tx);font-size:12.5px;font-family:inherit}
+.tb-search input::placeholder{color:var(--tx3)}
+.tb-search .k{font-family:var(--mono);font-size:10px;border:1px solid var(--line2);border-radius:4px;padding:1px 5px;color:var(--tx3)}
+.tb-right{margin-left:auto;display:flex;align-items:center;gap:10px}
+.chip{
+  display:inline-flex;align-items:center;gap:6px;height:32px;padding:0 12px;border-radius:9px;
+  border:1px solid var(--line);background:rgba(255,255,255,.03);font-size:11.5px;color:var(--tx2);white-space:nowrap;
+}
+.chip .dot{width:6px;height:6px;border-radius:50%;background:var(--jade);animation:pulse 2.4s infinite}
+.btn{
+  height:34px;padding:0 15px;border-radius:9px;border:1px solid var(--line2);background:rgba(255,255,255,.05);
+  color:var(--tx);font-size:12.5px;font-family:inherit;cursor:pointer;transition:.16s;white-space:nowrap;
+}
+.btn:hover{background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.22)}
+.btn.primary{background:linear-gradient(140deg,var(--gold),#D19B3F);color:#0A0E13;border-color:transparent;font-weight:600}
+.btn.primary:hover{filter:brightness(1.08)}
+.btn.sm{height:28px;padding:0 10px;font-size:11.5px;border-radius:7px}
+.btn.ghost{background:none}
+
+main{flex:1;overflow-y:auto;overflow-x:hidden;padding:26px 26px 60px}
+.view{display:none;animation:fade .28s ease}
+.view.on{display:block}
+@keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.wrap{max-width:1360px;margin:0 auto}
+
+/* ---------- hero ---------- */
+.hero{
+  position:relative;border-radius:18px;border:1px solid var(--line);overflow:hidden;
+  background:linear-gradient(120deg,#0D131B 0%,#101A22 55%,#0C1219 100%);
+  padding:26px 28px;margin-bottom:22px;
+}
+.hero::after{
+  content:"";position:absolute;right:-60px;top:-90px;width:340px;height:340px;border-radius:50%;
+  background:radial-gradient(circle,rgba(63,217,176,.14),transparent 68%);
+}
+.hero::before{
+  content:"";position:absolute;inset:0;
+  background:linear-gradient(90deg,rgba(232,180,90,.5),rgba(63,217,176,.45),transparent) top left/58% 1px no-repeat;
+}
+.hero-top{display:flex;align-items:flex-start;gap:16px;flex-wrap:wrap;position:relative}
+.hero h1{font-size:22px;font-weight:650;letter-spacing:.01em;line-height:1.35}
+.hero h1 span{color:var(--gold)}
+.hero p{color:var(--tx2);font-size:12.5px;margin-top:6px;max-width:640px;line-height:1.7}
+.hero-tag{
+  margin-left:auto;font-family:var(--mono);font-size:10.5px;color:var(--tx3);
+  border:1px dashed var(--line2);border-radius:8px;padding:7px 10px;line-height:1.7;text-align:right;
+}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;margin-top:22px;background:var(--line);border-radius:12px;overflow:hidden;position:relative}
+.stat{background:#0B1118;padding:15px 18px}
+.stat b{display:block;font-family:var(--mono);font-size:26px;font-weight:600;letter-spacing:-.02em;line-height:1.2}
+.stat b i{font-style:normal;font-size:12px;color:var(--tx3);margin-left:3px;font-weight:400}
+.stat small{display:block;color:var(--tx3);font-size:11px;margin-top:4px;letter-spacing:.02em}
+
+/* ---------- dept ---------- */
+.dept{margin-bottom:30px}
+.dept-h{display:flex;align-items:center;gap:12px;margin-bottom:13px;flex-wrap:wrap}
+.dept-h .bar{width:3px;height:17px;border-radius:2px}
+.dept-h h2{font-size:15px;font-weight:600;letter-spacing:.01em}
+.dept-h .en{font-family:var(--mono);font-size:10px;color:var(--tx3);letter-spacing:.1em;text-transform:uppercase}
+.dept-h .desc{color:var(--tx3);font-size:11.5px}
+.dept-h .cnt{margin-left:auto;font-family:var(--mono);font-size:11px;color:var(--tx3)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(238px,1fr));gap:13px}
+
+/* ---------- employee card ---------- */
+.emp{
+  position:relative;border-radius:14px;border:1px solid var(--line);background:linear-gradient(165deg,#111923,#0D141C 70%);
+  padding:15px 15px 13px;cursor:pointer;transition:.2s;overflow:hidden;
+}
+.emp::before{content:"";position:absolute;left:0;right:0;top:0;height:2px;background:var(--c);opacity:.75}
+.emp:hover{transform:translateY(-3px);border-color:color-mix(in srgb,var(--c) 38%,transparent);box-shadow:0 14px 34px rgba(0,0,0,.42)}
+.emp-top{display:flex;gap:11px;align-items:center}
+.av{
+  position:relative;width:44px;height:44px;flex:0 0 44px;border-radius:12px;display:grid;place-items:center;
+  font-size:19px;font-weight:600;color:var(--c);
+  background:color-mix(in srgb,var(--c) 13%,transparent);border:1px solid color-mix(in srgb,var(--c) 26%,transparent);
+}
+.av .st{position:absolute;right:-2px;bottom:-2px;width:10px;height:10px;border-radius:50%;border:2px solid #0D141C;background:var(--tx3)}
+.av .st.online{background:var(--jade)}
+.av .st.busy{background:var(--gold)}
+.av .st.offline{background:#3C4653}
+.emp-name{font-size:14px;font-weight:600;line-height:1.3}
+.emp-role{font-size:11px;color:var(--tx3);margin-top:1px;font-family:var(--mono);letter-spacing:.02em}
+.slot{position:absolute;right:12px;top:10px;font-family:var(--mono);font-size:9.5px;color:var(--tx3);letter-spacing:.1em}
+.emp-miss{color:var(--tx2);font-size:11.5px;line-height:1.6;margin-top:11px;min-height:36px;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.emp-foot{display:flex;align-items:center;gap:8px;margin-top:12px;padding-top:10px;border-top:1px solid rgba(255,255,255,.05)}
+.tk{flex:1;height:3px;border-radius:2px;background:rgba(255,255,255,.07);overflow:hidden}
+.tk i{display:block;height:100%;background:var(--c);opacity:.8;border-radius:2px}
+.emp-foot em{font-style:normal;font-family:var(--mono);font-size:9.5px;color:var(--tx3)}
+
+/* ---------- org ---------- */
+.org{display:flex;flex-direction:column;gap:0;align-items:center}
+.layer{width:100%;border:1px solid var(--line);border-radius:16px;background:rgba(15,21,29,.6);padding:18px 20px;position:relative}
+.layer-h{display:flex;align-items:baseline;gap:10px;margin-bottom:14px}
+.layer-h .idx{font-family:var(--mono);font-size:10px;color:var(--tx3);letter-spacing:.12em}
+.layer-h h3{font-size:14px;font-weight:600}
+.layer-h span{font-size:11px;color:var(--tx3)}
+.conn{width:1px;height:24px;background:rgba(255,255,255,.16);position:relative}
+.conn::after{content:"";position:absolute;left:-3px;bottom:-1px;width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,.22)}
+.mini-row{display:flex;gap:9px;flex-wrap:wrap}
+.mini{
+  display:flex;align-items:center;gap:8px;padding:8px 11px 8px 8px;border-radius:10px;
+  border:1px solid var(--line);background:var(--panel2);cursor:pointer;transition:.16s;
+}
+.mini:hover{border-color:color-mix(in srgb,var(--c) 40%,transparent);background:var(--panel3)}
+.mini .mav{width:26px;height:26px;border-radius:8px;display:grid;place-items:center;font-size:12px;font-weight:600;
+  color:var(--c);background:color-mix(in srgb,var(--c) 14%,transparent)}
+.mini b{font-size:12px;font-weight:600}
+.mini small{font-size:10px;color:var(--tx3);font-family:var(--mono)}
+
+/* ---------- board ---------- */
+.board-tools{display:flex;align-items:center;gap:9px;margin-bottom:16px;flex-wrap:wrap}
+.board{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;align-items:start}
+.col{background:rgba(255,255,255,.018);border:1px solid var(--line);border-radius:14px;padding:11px;min-height:440px}
+.col-h{display:flex;align-items:center;gap:7px;padding:2px 4px 10px}
+.col-h b{font-size:12px;font-weight:600}
+.col-h span{font-family:var(--mono);font-size:10px;color:var(--tx3);background:rgba(255,255,255,.06);border-radius:20px;padding:1px 7px}
+.col-h .cd{width:6px;height:6px;border-radius:50%}
+.task{
+  position:relative;border-radius:10px;border:1px solid var(--line);background:var(--panel2);
+  padding:11px 11px 9px;margin-bottom:9px;transition:.16s;
+}
+.task:hover{border-color:var(--line2);background:var(--panel3)}
+.task .tt{font-size:12.5px;line-height:1.5;margin-bottom:9px}
+.task .tm{display:flex;align-items:center;gap:6px;font-size:10px;color:var(--tx3);font-family:var(--mono)}
+.task .ow{display:inline-flex;align-items:center;gap:5px;color:var(--tx2);font-family:var(--sans);font-size:11px}
+.task .ow i{width:16px;height:16px;border-radius:5px;display:grid;place-items:center;font-style:normal;font-size:9px;font-weight:600}
+.pri{font-family:var(--mono);font-size:9px;padding:1px 5px;border-radius:4px;border:1px solid}
+.pri.P0{color:#FF8B7E;border-color:rgba(228,87,76,.45);background:rgba(228,87,76,.12)}
+.pri.P1{color:var(--gold);border-color:rgba(232,180,90,.4);background:rgba(232,180,90,.1)}
+.pri.P2{color:var(--tx3);border-color:var(--line2);background:rgba(255,255,255,.04)}
+.task .acts{display:flex;gap:5px;margin-top:9px;padding-top:8px;border-top:1px solid rgba(255,255,255,.05)}
+.empty{color:var(--tx3);font-size:11px;text-align:center;padding:18px 0;border:1px dashed var(--line);border-radius:9px}
+
+/* ---------- weekly ---------- */
+.wk{border:1px solid var(--line);border-radius:14px;overflow:hidden;background:rgba(15,21,29,.55)}
+.wk-row{display:grid;grid-template-columns:178px minmax(0,1fr) 90px 208px;gap:18px;align-items:center;padding:14px 18px;border-bottom:1px solid var(--line)}
+.wk-row:last-child{border-bottom:0}
+.wk-row:hover{background:rgba(255,255,255,.022)}
+.wk-who{display:flex;align-items:center;gap:10px}
+.wk-who .mav{width:30px;height:30px;border-radius:9px;display:grid;place-items:center;font-size:13px;font-weight:600;color:var(--c);background:color-mix(in srgb,var(--c) 14%,transparent)}
+.wk-who b{font-size:12.5px;display:block;line-height:1.3}
+.wk-who small{font-size:10px;color:var(--tx3);font-family:var(--mono)}
+.kr{margin-bottom:7px}
+.kr:last-child{margin-bottom:0}
+.kr .krt{display:flex;justify-content:space-between;font-size:11px;color:var(--tx2);gap:12px}
+.kr .krt em{font-style:normal;font-family:var(--mono);font-size:10px;color:var(--tx3);flex:0 0 auto}
+.kr .krb{height:4px;border-radius:2px;background:rgba(255,255,255,.06);margin-top:5px;overflow:hidden}
+.kr .krb i{display:block;height:100%;border-radius:2px;background:linear-gradient(90deg,var(--c),color-mix(in srgb,var(--c) 55%,#fff))}
+.krline{display:flex;align-items:center;gap:9px;margin-top:5px}
+.krline .krb{flex:1;margin-top:0}
+.krline em{font-style:normal;font-family:var(--mono);font-size:10px;color:var(--tx3);flex:0 0 32px;text-align:right}
+.wk-num{text-align:right;font-family:var(--mono);font-size:13px}
+.wk-num small{display:block;color:var(--tx3);font-size:9.5px;letter-spacing:.06em}
+.wk-rep{font-size:11.5px;color:var(--tx2);line-height:1.55}
+
+/* ---------- rules ---------- */
+.rule{position:relative;border:1px solid var(--line);border-radius:12px;background:rgba(15,21,29,.6);padding:14px 16px;margin-bottom:10px}
+.rule-h{display:flex;align-items:center;gap:9px;margin-bottom:8px}
+.rule-h .n{font-family:var(--mono);font-size:10px;color:var(--gold);border:1px solid rgba(232,180,90,.3);border-radius:5px;padding:1px 6px}
+.rule-h b{font-size:12.5px}
+.rule-h .src{margin-left:auto;font-size:10px;color:var(--tx3);font-family:var(--mono)}
+.rule p{font-size:12px;color:var(--tx2);line-height:1.7;white-space:pre-wrap}
+.rule textarea{
+  width:100%;background:rgba(0,0,0,.28);border:1px solid var(--line2);border-radius:8px;color:var(--tx);
+  font-family:var(--sans);font-size:12px;line-height:1.7;padding:10px;resize:vertical;min-height:64px;outline:0;
+}
+.rule textarea:focus{border-color:rgba(63,217,176,.45)}
+.sect-t{display:flex;align-items:center;gap:10px;margin:26px 0 13px}
+.sect-t h2{font-size:14px;font-weight:600}
+.sect-t .ln{flex:1;height:1px;background:var(--line)}
+.note{border-left:2px solid var(--gold);background:rgba(232,180,90,.055);border-radius:0 10px 10px 0;padding:13px 16px;font-size:12px;color:var(--tx2);line-height:1.75}
+.note b{color:var(--gold)}
+
+/* ---------- drawer ---------- */
+.mask{position:fixed;inset:0;background:rgba(3,6,9,.66);backdrop-filter:blur(3px);opacity:0;pointer-events:none;transition:.24s;z-index:40}
+.mask.on{opacity:1;pointer-events:auto}
+.drawer{
+  position:fixed;top:0;right:0;height:100%;width:640px;max-width:94vw;z-index:50;
+  background:#0A0F15;border-left:1px solid var(--line2);transform:translateX(102%);transition:transform .3s cubic-bezier(.4,0,.2,1);
+  display:flex;flex-direction:column;
+}
+.drawer.on{transform:none}
+.dr-h{padding:22px 24px 16px;border-bottom:1px solid var(--line);display:flex;gap:14px;align-items:flex-start}
+.dr-h .av{width:52px;height:52px;flex:0 0 52px;font-size:22px;border-radius:14px}
+.dr-h h2{font-size:17px;font-weight:650;line-height:1.3}
+.dr-h .sub{font-size:11.5px;color:var(--tx3);font-family:var(--mono);margin-top:3px}
+.dr-h .x{margin-left:auto;width:30px;height:30px;border-radius:8px;border:1px solid var(--line);background:none;color:var(--tx2);cursor:pointer;font-size:15px;line-height:1}
+.dr-h .x:hover{background:rgba(255,255,255,.07);color:var(--tx)}
+.dr-body{flex:1;overflow-y:auto;padding:20px 24px 40px}
+.dr-miss{font-size:12.5px;color:var(--tx2);line-height:1.75;padding:13px 15px;border-radius:10px;
+  background:color-mix(in srgb,var(--c) 7%,transparent);border:1px solid color-mix(in srgb,var(--c) 20%,transparent)}
+.blk{margin-top:20px}
+.blk-h{display:flex;align-items:center;gap:8px;margin-bottom:9px}
+.blk-h h4{font-size:11px;font-weight:600;letter-spacing:.05em;color:var(--tx3);font-family:var(--mono)}
+.blk-h .ln{flex:1;height:1px;background:var(--line)}
+.blk ul{list-style:none;display:flex;flex-direction:column;gap:6px}
+.blk ul li{font-size:12.5px;color:var(--tx2);line-height:1.65;padding-left:15px;position:relative}
+.blk ul li::before{content:"";position:absolute;left:0;top:9px;width:5px;height:5px;border-radius:1.5px;background:var(--c);opacity:.65}
+.tags{display:flex;flex-wrap:wrap;gap:6px}
+.tag{font-size:11px;color:var(--tx2);border:1px solid var(--line2);border-radius:6px;padding:3px 9px;background:rgba(255,255,255,.03)}
+.tag.mem{border-color:color-mix(in srgb,var(--c) 26%,transparent);color:color-mix(in srgb,var(--c) 80%,#fff);background:color-mix(in srgb,var(--c) 8%,transparent)}
+.pbox{position:relative;border:1px solid var(--line2);border-radius:11px;background:#060A0E;overflow:hidden}
+.pbox .pb-h{display:flex;align-items:center;gap:8px;padding:8px 11px;border-bottom:1px solid var(--line);background:rgba(255,255,255,.025)}
+.pbox .pb-h span{font-family:var(--mono);font-size:10px;color:var(--tx3);letter-spacing:.08em}
+.pbox pre{
+  padding:14px;font-family:var(--mono);font-size:11.5px;line-height:1.85;color:#C9D6E2;
+  white-space:pre-wrap;word-break:break-word;max-height:320px;overflow:auto;
+}
+.metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--line);border-radius:10px;overflow:hidden;border:1px solid var(--line)}
+.metrics div{background:#0B1118;padding:11px 13px}
+.metrics b{display:block;font-family:var(--mono);font-size:17px;font-weight:600}
+.metrics small{font-size:10px;color:var(--tx3)}
+
+/* ---------- today ---------- */
+.today{border:1px solid rgba(228,87,76,.24);border-radius:16px;background:linear-gradient(180deg,rgba(228,87,76,.075),rgba(15,21,29,.55));padding:16px 18px;margin-bottom:22px}
+.today-h{display:flex;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap}
+.today-h .td-dot{width:7px;height:7px;border-radius:50%;background:var(--red);box-shadow:0 0 0 0 rgba(228,87,76,.5);animation:pulse 2.2s infinite}
+.today-h b{font-size:13.5px;letter-spacing:.01em}
+.today-h .td-sub{font-family:var(--mono);font-size:10.5px;color:var(--tx3)}
+.today-h .td-acts{margin-left:auto;display:flex;gap:7px;flex-wrap:wrap}
+.td-item{display:flex;align-items:center;gap:10px;padding:9px 11px;border-radius:9px;background:rgba(0,0,0,.24);margin-bottom:7px}
+.td-item:last-child{margin-bottom:0}
+.td-item .tagline{width:2px;height:17px;border-radius:2px;flex:0 0 2px}
+.td-item .t{flex:1;font-size:12.5px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.td-item .who{font-size:11px;color:var(--tx2);flex:0 0 auto}
+.td-item .due{font-family:var(--mono);font-size:10.5px;flex:0 0 auto}
+.due.od{color:#FF8B7E}
+.due.td{color:var(--gold)}
+.due.sn{color:var(--blue)}
+.td-none{font-size:12px;color:var(--tx3);padding:6px 2px}
+
+/* ---------- modal ---------- */
+.modal-mask{position:fixed;inset:0;background:rgba(3,6,9,.74);backdrop-filter:blur(4px);display:grid;place-items:center;z-index:60;padding:20px}
+.modal{width:100%;max-width:440px;background:#0D131B;border:1px solid var(--line2);border-radius:16px;padding:22px;box-shadow:0 30px 80px rgba(0,0,0,.6)}
+.modal h3{font-size:15px;margin-bottom:4px}
+.modal .mh{font-size:11.5px;color:var(--tx3);margin-bottom:16px}
+.field{margin-bottom:12px}
+.field label{display:block;font-size:11px;color:var(--tx3);margin-bottom:6px;letter-spacing:.04em}
+.field input,.field select{width:100%;height:36px;border-radius:9px;background:rgba(255,255,255,.04);border:1px solid var(--line2);color:var(--tx);font-family:inherit;font-size:12.5px;padding:0 11px;outline:0}
+.field input:focus,.field select:focus{border-color:rgba(63,217,176,.45)}
+.field select option{background:#0D131B}
+.modal-foot{display:flex;gap:9px;justify-content:flex-end;margin-top:18px}
+
+@media (max-width:1080px){
+  .board{grid-template-columns:repeat(2,1fr)}
+  .stats{grid-template-columns:repeat(2,1fr)}
+  .wk-row{grid-template-columns:1fr;gap:8px}
+  .wk-num{text-align:left}
+}
+@media (max-width:760px){
+  html,body{max-width:100%;overflow-x:hidden}
+  body{flex-direction:column;overflow-y:auto;height:auto}
+  .shell{height:auto;min-height:100vh}
+  .sidebar{width:100%;flex:none;height:auto;flex-direction:row;padding:10px 12px;gap:8px;border-right:0;border-bottom:1px solid var(--line);position:sticky;top:0;z-index:20}
+  .brand-sub,.side-foot{display:none}
+  .seal{margin:0;width:36px;height:36px;font-size:16px;border-radius:10px}
+  .nav{flex-direction:row;padding:0;gap:4px;width:auto;flex:1;justify-content:flex-end}
+  .nav-item{width:52px;height:44px}
+  .nav-item .nl{font-size:9.5px}
+  main{padding:16px 14px 50px;overflow:visible}
+  .topbar{height:auto;flex:none;padding:10px 14px;flex-wrap:wrap;gap:8px}
+  .tb-title{font-size:13.5px;width:100%}
+  .tb-title em{display:block;margin:2px 0 0}
+  .tb-search{order:3;max-width:none;flex:1 1 100%}
+  .tb-right{margin-left:0;flex:1 1 100%;flex-wrap:wrap}
+  .tb-right .chip{display:none}
+  .tb-right .btn{flex:1}
+  .hero{padding:20px}
+  .hero-tag{display:none}
+  .hero h1{font-size:19px}
+  .board{grid-template-columns:1fr}
+  .col{min-height:0}
+  .grid{grid-template-columns:repeat(auto-fill,minmax(200px,1fr))}
+  input,select,textarea{font-size:16px !important}
+  .field input,.field select{height:44px}
+  .btn{min-height:44px}
+  .btn.sm{min-height:38px}
+  main{padding-bottom:calc(50px + env(safe-area-inset-bottom))}
+  .today-h .td-acts{margin-left:0;width:100%}
+  .today-h .td-acts .btn{flex:1}
+  .td-item .who{display:none}
+}
+</style>
+</head>
+<body>
+
+<aside class="sidebar">
+  <div class="seal">幕</div>
+  <div class="brand-sub">KONGMING</div>
+  <nav class="nav" id="nav">
+    <div class="nav-item on" data-view="wall"><span class="ni">台</span><span class="nl">工位墙</span></div>
+    <div class="nav-item" data-view="org"><span class="ni">图</span><span class="nl">架构</span></div>
+    <div class="nav-item" data-view="board"><span class="ni">单</span><span class="nl">看板</span></div>
+    <div class="nav-item" data-view="week"><span class="ni">报</span><span class="nl">周报</span></div>
+  </nav>
+  <div class="side-foot"><div class="pulse"></div><span>15 MIN</span></div>
+</aside>
+
+<div class="shell">
+  <header class="topbar">
+    <div class="tb-title">赛博孔明 · 数字幕府<em>AI 数字员工工坊</em></div>
+    <label class="tb-search">
+      <span style="font-size:12px">查</span>
+      <input id="q" placeholder="搜岗位、花名、职责…" autocomplete="off">
+      <span class="k">/</span>
+    </label>
+    <div class="tb-right">
+      <div class="chip"><span class="dot"></span>心跳巡检 · 每 15 分钟</div>
+      <button class="btn ghost" id="btnExport">导出全部档案</button>
+      <button class="btn primary" id="btnNew">下达任务</button>
+    </div>
+  </header>
+
+  <main>
+    <!-- 工位墙 -->
+    <section class="view on" id="view-wall">
+      <div class="wrap">
+        <div class="hero">
+          <div class="hero-top">
+            <div>
+              <h1>主公的 <span>14 位数字员工</span>，已经上工。</h1>
+              <p>三层组织：幕僚室定方向、Studio 出成果、业务组闭环交付；中枢「小灯」做连接器。每个工位都带独立档案、知识库、记忆与 OKR——不用每次从头交代。</p>
+            </div>
+            <div class="hero-tag">
+              WORKSHOP v1<br>START · 反调官 + 执行岗 + 复盘
+            </div>
+          </div>
+          <div class="stats" id="stats"></div>
+        </div>
+
+        <div class="today">
+          <div class="today-h">
+            <span class="td-dot"></span>
+            <b>今天要处理</b>
+            <span class="td-sub" id="todaySub"></span>
+            <div class="td-acts">
+              <button class="btn sm ghost" id="btnBackup">导出 JSON 备份</button>
+              <button class="btn sm ghost" id="btnRestore">导入恢复</button>
+            </div>
+          </div>
+          <div id="todayList"></div>
+          <input type="file" id="fileImport" accept=".json,application/json" style="display:none">
+        </div>
+
+        <div id="wall"></div>
+      </div>
+    </section>
+
+    <!-- 架构 -->
+    <section class="view" id="view-org">
+      <div class="wrap">
+        <div class="hero" style="padding:22px 26px">
+          <div class="hero-top">
+            <div>
+              <h1 style="font-size:18px">三层架构 · 一个入口</h1>
+              <p>主公只对接「小灯」和「Studio」。其余调度由中枢判断谁有空、谁接力；完成后统一验收，再写进规则。</p>
+            </div>
+          </div>
+        </div>
+        <div class="org" id="org"></div>
+        <div class="note" style="margin-top:22px">
+          <b>落地顺序建议：</b>先只启用三个岗——反调官（监军）、一个执行岗（掌书记）、一套复盘机制。跑通「下达任务 → 验收 → 复盘 → 写进规则」这条闭环，再按缺口逐个扩编。一次上十四个，只会得到十四个不听话的实习生。
+        </div>
+      </div>
+    </section>
+
+    <!-- 看板 -->
+    <section class="view" id="view-board">
+      <div class="wrap">
+        <div class="board-tools">
+          <div class="chip" id="boardSum"></div>
+          <div style="margin-left:auto;display:flex;gap:8px">
+            <button class="btn sm" id="btnReset">重置演示数据</button>
+            <button class="btn sm primary" id="btnNew2">+ 新任务</button>
+          </div>
+        </div>
+        <div class="board" id="board"></div>
+      </div>
+    </section>
+
+    <!-- 周报 -->
+    <section class="view" id="view-week">
+      <div class="wrap">
+        <div class="sect-t"><h2>OKR 与本周周报</h2><div class="ln"></div><span style="font-size:11px;color:var(--tx3);font-family:var(--mono)">2026 / W45</span></div>
+        <div class="wk" id="week"></div>
+        <div class="sect-t"><h2>已生效的规则 <span style="font-size:11px;color:var(--tx3);font-weight:400">（复盘产出，自动应用于全员）</span></h2><div class="ln"></div><button class="btn sm" id="btnRule">+ 新增规则</button></div>
+        <div class="note" style="margin-bottom:14px">
+          每周五让「小灯」发一遍复盘指令：<b>这个任务完成了，请复盘：1）哪些地方做得好；2）哪些地方可以改进；3）如果重做一次，怎么更快、更省 token？把结论写进规则。</b>
+          结论落到下面的规则里，才算真正进化；只复盘不写规则，下周会重新踩同一个坑。
+        </div>
+        <div id="rules"></div>
+        <div class="sect-t"><h2>双层解释法 · 自测模板</h2><div class="ln"></div></div>
+        <div class="rule">
+          <div class="rule-h"><span class="n">TPL</span><b>学任何一个概念，都让 AI 给两版</b><span class="src">用于自身成长</span></div>
+          <p>我想学习的是【X】。请分三段回答：
+一、小白版：用一个生活化的比喻讲清它是什么，不用任何术语。
+二、专业版：给出准确定义、关键机制、适用边界，以及行业内常见的争议点。
+三、易错点与自测：列出 3 个最容易理解错的地方，再出 5 道自测题（含答案），最后告诉我下一步该学什么。</p>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<div class="mask" id="mask"></div>
+<aside class="drawer" id="drawer">
+  <div class="dr-h" id="drHead"></div>
+  <div class="dr-body" id="drBody"></div>
+</aside>
+
+<div id="modal"></div>
+
+<script>
+/* ============ 组织与岗位数据 ============ */
+const DEPTS = {
+  staff:{name:'幕僚室',en:'War Room',color:'#E8B45A',desc:'大脑。定方向、统进度、算清账、随时挑刺。'},
+  studio:{name:'内容 Studio',en:'Content Studio',color:'#3FD9B0',desc:'执行层。选题、主笔、设计、分发，一条流水线。'},
+  travel:{name:'旅游业务组',en:'Travel Ops',color:'#5AA9E6',desc:'线路、成本、客诉。真金白银在这里。'},
+  life:{name:'生活层',en:'Life',color:'#A78BFA',desc:'给自己请的教练，不产出业绩，只产出人。'},
+  core:{name:'中枢',en:'Hub',color:'#F0A6C0',desc:'连接器。只对主公负责，串联所有层级。'}
+};
+
+const EMPLOYEES = [
+/* ---------- 幕僚室 ---------- */
+{
+  id:'junshi', name:'军师', role:'战略官', dept:'staff', status:'online',
+  mission:'判断方向：哪条路值得走，哪条路三年后还在原地。',
+  duties:[
+    '季度战略方向与优先级排序，明确「这个季度只做三件事」。',
+    'AI×旅游赛道的技术判断：哪些能真降本、哪些只是噱头。',
+    '重大投入（人力、预算、平台）的取舍建议与止损线。',
+    '为每次决策留下「判断依据 + 假设 + 推翻条件」，便于事后复盘。'
+  ],
+  boundary:['不代替主公拍板','不做具体执行与文案','不承诺不确定的行业数据'],
+  prompt:'你是主公（kaka）帐下的战略官，花名军师。主公是湖北幸运乐游国际旅行社的 15 年旅游从业者，同时运营公众号「kaka的赛博孔明玩转AI和旅游」，内容方向是 AI 普及与 AI×旅游。\n\n你的任务不是让主公舒服，而是帮他看清方向：\n1）每次建议先给结论，再给依据（行业事实、真实案例、可验证数据），最后给「如果我判断错了，怎么补救」。\n2）严格区分「能降本增客的真能力」与「只是演示好看的噱头」，判断标准三条：能不能增加客单、能不能降低边际成本、能不能沉淀成可复用资产。\n3）季度方向必须落到三个月内可验证的里程碑，不接受空泛口号。\n4）不熟悉的领域直接说不知道，并给出核实路径。\n\n每次对话结束主动问：「这个季度，你想先攻哪一块？」',
+  kb:['公司业务与成本结构说明','公众号历史爆款 50 篇','周边游行业季度观察'],
+  skills:['战略拆解','竞品分析','优先级排序','止损线设定'],
+  memory:['主公是15年旅游从业者，忌讳空话','选题库有轮换机制，世界遗产系列不优先','对外文案要能直接复制提交'],
+  okr:[{o:'Q4 方向收敛：AI×旅游只做两条线',krs:[{t:'输出两条主线各 3 个可验证里程碑',p:100},{t:'砍掉 4 个低效试验项目',p:75},{t:'与财务官对齐投入上限',p:60}]}],
+  token:{used:128,cap:300}, cost:'38.4', report:'完成两条主线收敛，砍掉 4 个低效试验；下季度聚焦「AI 行程单 + 内容自动化」。'
+},
+{
+  id:'zhubu', name:'主簿', role:'COO · 运营官', dept:'staff', status:'busy',
+  mission:'让每一件事都有负责人、有截止日、有验收标准。',
+  duties:[
+    '把目标拆成 WBS：任务 / 负责人 / 交付物 / 截止日。',
+    '每周一出一张红黄绿状态表，超期项直接点名到岗。',
+    '跨部门卡点协调，先给两个解，再请主公选一个。',
+    '沉淀 SOP：重复三次以上的事，必须写成流程。'
+  ],
+  boundary:['不评价内容质量（那是监军和掌书记的事）','不直接对客户','不擅自更改已确认的截止日'],
+  prompt:'你是主公（kaka）的 COO，花名主簿，负责统筹所有项目的进度与协作。\n\n工作规则：\n1）接到任何目标，先拆 WBS：任务、唯一负责人、交付物形态、截止日、验收标准。缺一项不许开工。\n2）每周一给红黄绿状态表：绿=按计划，黄=有风险但可控，红=需要主公介入；红色项必须写明「需要什么支持」。\n3）任何任务「进行中」超过 7 天没有更新，视为异常，直接向主公上报。\n4）遇到卡点，永远先给两个可选解法（含各自代价），再请主公拍板，不许只抛问题。\n5）同一件事重复出现三次以上，写进 SOP，下次不再讨论。\n\n汇报风格：不铺垫、不修饰，先结论后细节。',
+  kb:['项目排期表','各岗位职责边界表','SOP 库'],
+  skills:['WBS 拆解','甘特排期','风险预警','跨岗协调'],
+  memory:['主公习惯零散给信息，要主动补全','发布流程必须留人工确认环节','超期要直接说，不要委婉'],
+  okr:[{o:'交付节奏稳定：内容日更不断档',krs:[{t:'连续 4 周日更 3 篇达成率 100%',p:90},{t:'超期任务占比 < 5%',p:80},{t:'新增 6 条 SOP',p:50}]}],
+  token:{used:96,cap:250}, cost:'28.8', report:'日更达成 21/21，超期任务 2 项（均为供应商回复延迟）；新增 SOP 3 条。'
+},
+{
+  id:'sicang', name:'司仓', role:'财务官', dept:'staff', status:'online',
+  mission:'每一分钱都算清楚：成本、毛利、现金流，不许出现「大概」。',
+  duties:[
+    '线路报价拆分：交通 / 住宿 / 门票 / 餐饮 / 导服 / 保险 / 佣金 / 税。',
+    '单人成本、毛利额、毛利率三件套，毛利低于 15% 直接警示。',
+    '预算管控与月度支出复盘，标出「可砍项」。',
+    '成本核算表维护（两日游成本核算表 / 定制游核算表）。'
+  ],
+  boundary:['不做线路创意','不直接对客报价（由计调出）','不美化亏损数据'],
+  prompt:'你是主公（kaka）的财务官，花名司仓，负责一切成本与毛利判断。\n\n硬性规则：\n1）任何报价必须拆分八项：交通、住宿、门票、餐饮、导服、保险、平台佣金、税费。缺项即拒答。\n2）必须给出：单人成本、单人售价、毛利额、毛利率；毛利率低于 15% 时必须在开头一行标注「毛利预警」。\n3）禁止使用「大概」「差不多」「区间」这类模糊表述；数据不全时明确标注「假设值」，并在结尾列出待确认清单。\n4）成本变动（油价、房价、门票调价）要主动提示对毛利的影响幅度。\n5）输出优先用表格，表后附一句人话结论。\n\n主公常用表格结构：两日游成本核算表、定制游成本核算表。保持字段口径一致。',
+  kb:['两日游成本核算表.xlsx','定制游成本核算表.html','供应商价格表','税费与佣金口径说明'],
+  skills:['成本拆解','毛利测算','敏感度分析','预算复盘'],
+  memory:['主公要表格 + 一句人话结论','不允许区间模糊值','毛利 15% 是警戒线'],
+  okr:[{o:'报价零差错、毛利可追溯',krs:[{t:'报价复核差错率 0',p:100},{t:'毛利率低于 15% 的方案全部预警',p:100},{t:'供应商价格表月更 2 次',p:70}]}],
+  token:{used:74,cap:200}, cost:'22.2', report:'复核 9 份报价，2 份毛利预警；供应商价格表更新完毕，酒店均价上浮 6%。'
+},
+{
+  id:'jianjun', name:'监军', role:'反调官', dept:'staff', status:'online',
+  mission:'专门让主公不舒服：在他拍板之前，把漏洞摊在桌上。',
+  duties:[
+    '对任何方案指出至少两条逻辑漏洞或潜在风险。',
+    '给一个反例或替代视角，用数据或事实支撑。',
+    '判定内容选题是否有「增量信息」，没有就退回。',
+    '结尾必答一句：如果这件事不做，会怎样。'
+  ],
+  boundary:['不为了反对而反对，每条反对必须带依据','不负责给完整解决方案','不做情绪化表达'],
+  prompt:'你是主公（kaka）的反调官，花名监军。你的唯一职责是让主公保持清醒，而不是让他舒服。\n\n当主公提出任何观点、方案或选题，你必须：\n1）指出至少 2 个逻辑漏洞或潜在风险，指名道姓说是哪一句有问题。\n2）提出至少 1 个反例或替代视角，用数据、案例或行业事实支撑，不许空口质疑。\n3）如果这是内容选题，判断它是否具备「增量信息」——读者看完是否比刷到之前多知道一件事；只有情绪没有信息的，直接建议换题。\n4）结尾必须回答一句：「如果这件事不做，会怎样？」\n\n红线：不许附和，不许用「这个想法很好，但是」开头，不许说「总体来看是可行的」这类模糊结论。要具体、要难听、要可执行。\n\n如果主公的方案确实没有明显漏洞，就直接说「这一版我挑不出硬伤」，然后指出它最大的不确定性在哪。',
+  kb:['过往失败案例库','公众号阅读数据（含低阅读篇目）','行业政策与合规要点'],
+  skills:['逻辑找漏','反例构造','风险定价','选题增量判断'],
+  memory:['主公最怕AI一味附和','不接受空泛质疑，必须带依据','内容要有增量信息，不能只有情绪'],
+  okr:[{o:'拦截低质量决策与选题',krs:[{t:'每周至少拦下 3 个低增量选题',p:85},{t:'提出的风险中 ≥60% 被证实存在',p:70},{t:'零附和率（附和无依据结论）',p:100}]}],
+  token:{used:112,cap:260}, cost:'33.6', report:'拦下 5 个同质化选题；指出「AI 万能论」系列存在事实风险，建议改为工具实测。'
+},
+/* ---------- 内容 Studio ---------- */
+{
+  id:'zhangshuji', name:'掌书记', role:'主笔', dept:'studio', status:'busy',
+  mission:'把主公 15 年的经验，写成读者愿意转给朋友看的东西。',
+  duties:[
+    '公众号长文撰写：1200–1800 字，朋友分享口吻。',
+    '固定开头：15 年旅游从业者身份切入，交代「我为什么有资格说这件事」。',
+    '结构：具体场景 → 一个问题 → 可操作方法 → 可复用清单。',
+    '产出直接进草稿箱，等主公确认后再群发。'
+  ],
+  boundary:['不自己决定发布','不用行业黑话（赋能/抓手/闭环）','不编造数据与案例'],
+  prompt:'你是主公（kaka）公众号「kaka的赛博孔明玩转AI和旅游」的主笔，花名掌书记。\n\n写作规范：\n1）开头固定：以「15 年旅游从业者」身份切入，一两句话交代为什么我有资格聊这件事，不铺排、不自夸。\n2）口吻：朋友分享型——像在饭桌上跟同行讲一件刚发现的事，可以有判断，可以有情绪，但不端着。\n3）禁用词：赋能、抓手、闭环、颗粒度、底层逻辑、护城河。出现即重写。\n4）结构四段：一个具体场景（真实地名、价格、时间）→ 一个真问题 → 一个可操作的方法（步骤可照做）→ 一份可复用清单（读者能截图保存）。\n5）长度 1200–1800 字；每 300 字至少一个具体细节（数字、地名、平台规则、真实对话）。\n6）结尾不喊口号，给一个今天就能做的小动作。\n7）产出后一律存草稿箱，等主公人工确认再群发，绝不自行发布。\n\n选题由「候风」提供，事实由「校书」核对，你只管把它写好看、写扎实。',
+  kb:['公众号历史文章 200 篇','主公口述素材库','AI 工具实测记录','旅游行业常识手册'],
+  skills:['公众号长文','故事化表达','清单体','标题打磨'],
+  memory:['开头必须是15年旅游从业者','朋友分享型口吻，不用黑话','草稿箱待确认，不自动群发','总结类内容偏好表格+示例'],
+  okr:[{o:'稳定产出可发布级初稿',krs:[{t:'每周 12 篇初稿，一次过稿率 ≥70%',p:88},{t:'平均阅读完成率 ≥45%',p:65},{t:'建立 30 个开头模板库',p:40}]}],
+  token:{used:186,cap:400}, cost:'55.8', report:'本周 13 篇初稿，10 篇一次过稿；「AI 帮我写行程单」单篇阅读破 8000。'
+},
+{
+  id:'houfeng', name:'候风', role:'选题官', dept:'studio', status:'online',
+  mission:'每天找出 3 个「有热度、有增量、主公讲得动」的题。',
+  duties:[
+    '每日选题池维护，3 篇不重复、不与近 14 天撞题。',
+    '判断标准：7 日内真实热点 > 长期常青 > 世界遗产系列（不优先）。',
+    '每题必须写清「增量信息点」，写不出就换题。',
+    '输出表格：选题 / 角度 / 素材来源 / 预计字数 / 风险。'
+  ],
+  boundary:['不写正文','不用未经核实的截图当选题依据','不追与业务无关的纯娱乐热点'],
+  prompt:'你是主公（kaka）的选题官，花名候风，负责公众号「kaka的赛博孔明玩转AI和旅游」的每日选题。\n\n选题标准（按优先级）：\n1）7 日内真实热点，且有可查来源（平台热榜、官方公告、行业新闻）。\n2）长期常青题（旅行常识、AI 工具实测、行业经验）。\n3）世界遗产系列：不优先，除非有新闻由头。\n\n硬性要求：\n- 每天 3 条，彼此不重复，且不与近 14 天已发内容撞题。\n- 每条必须写一句「增量信息点」：读者看完比刷到之前多知道了什么。写不出这句，换题。\n- 输出表格五列：选题 / 切入角度 / 素材来源 / 预计字数 / 风险提示。\n- 拒绝纯情绪题、拒绝无法核实的数据、拒绝需要踩政策红线的话题。\n\n选题通过后交给掌书记写，事实部分交给校书核。',
+  kb:['选题库（含 90 天已用记录）','平台热榜快照','公众号阅读数据'],
+  skills:['热点捕捉','选题去重','角度设计','风险预判'],
+  memory:['日更3-6篇，一天选3篇不重复','世界遗产系列不优先','必须有真实热点数据支撑'],
+  okr:[{o:'选题命中率与新鲜度',krs:[{t:'每周 21 条选题，撞题 0 次',p:95},{t:'选题带来阅读 ≥ 均值 1.2 倍占比 40%',p:72},{t:'选题库常备 60 条',p:80}]}],
+  token:{used:52,cap:180}, cost:'15.6', report:'出题 21 条全部通过；「AI 报价」类选题表现最好，计划加开子系列。'
+},
+{
+  id:'danqing', name:'丹青', role:'设计师', dept:'studio', status:'busy',
+  mission:'第一眼就要抓住人，第二眼要看得懂卖什么。',
+  duties:[
+    '商业海报与品牌物料（乐巴士系列）主视觉设计。',
+    '公众号排版与配图，遵循「青蓝简报」规范。',
+    '信息层级不超过 3 层，重点信息必须在 3 秒内读到。',
+    '出图先给 2 个方向，确定后再精修。'
+  ],
+  boundary:['不使用未授权字体与图片','不改动品牌 logo 比例','不做低对比度的「高级灰」糊图'],
+  prompt:'你是主公（kaka）的设计师，花名丹青，服务两类需求：旅行社商业物料（乐巴士品牌）与公众号视觉。\n\n设计要求：\n1）风格偏好：有趣、有冲击力、有商业感。大标题、强对比、克制留白，信息层级不超过 3 层。\n2）第一眼抓人，第二眼让人看懂卖什么——价格、地点、时间三项必须清晰可读。\n3）公众号排版遵循「青蓝简报」规范：主色、字号、组件间距统一，不临时改配色。\n4）任何设计先给 2 个方向（含各自取舍），确认后再精修，不直接出终稿。\n5）素材合规：不用未授权字体与图片；品牌 logo 比例不可改；不写「最」「第一」等违禁词。\n\n输出时说明：设计思路一句话、配色理由一句话、以及哪里最容易被误读。',
+  kb:['乐巴士品牌视觉规范','青蓝简报排版模板','海报版式参考库'],
+  skills:['主视觉设计','信息层级','公众号排版','物料延展'],
+  memory:['偏好有趣、冲击力强的商业海报','乐巴士物料要统一品牌调性','不用违禁词'],
+  okr:[{o:'物料一次通过率提升',krs:[{t:'海报一次通过率 ≥70%',p:78},{t:'青蓝简报模板覆盖率 100%',p:90},{t:'建立 12 套可复用版式',p:55}]}],
+  token:{used:141,cap:320}, cost:'42.3', report:'乐巴士秋季温泉主视觉两版定稿；青蓝简报模板已覆盖全部推文。'
+},
+{
+  id:'jiaoshu', name:'校书', role:'知识官', dept:'studio', status:'online',
+  mission:'每一个数字都要有出处，查不到就说查不到。',
+  duties:[
+    '事实核查：价格、政策、签证规则、平台规则，标注来源与时间。',
+    '维护素材库：案例、踩坑记录、行业常识、话术。',
+    '区分「官方规则」与「经验判断」，不许混着说。',
+    '为每篇推文附一份「可核查清单」。'
+  ],
+  boundary:['不编造数据','不把旧规则当现行规则','不替主笔润色文风'],
+  prompt:'你是主公（kaka）的知识官，花名校书，负责所有事实核查与知识沉淀。\n\n工作原则：\n1）任何数字、政策、价格、平台规则，必须给出「来源 + 时间」，格式：来源｜日期｜链接或出处。\n2）严格区分三类信息：官方规则（可查证）、行业惯例（多数人这么做）、个人经验（主公或同行的判断）。不许混为一谈。\n3）查不到就明确说「未能核实」，并给出核实路径，绝不用推测填补。\n4）发现过期信息立即标注「已失效」并说明新规则。\n5）为每篇内容产出一份「可核查清单」：文中出现的每个关键数据对应的出处。\n\n长期任务：维护素材库（案例库、踩坑库、常识库），每周补充不少于 10 条。',
+  kb:['行业政策文件','平台规则快照','踩坑案例库','源素材归档'],
+  skills:['事实核查','来源标注','知识库维护','规则比对'],
+  memory:['数据必须有出处和时间','查不到就说查不到','旧规则不能当现行规则'],
+  okr:[{o:'内容零事实性错误',krs:[{t:'核查条目 100% 附来源',p:100},{t:'事实性错误 0 起',p:100},{t:'素材库周增 10 条',p:85}]}],
+  token:{used:63,cap:200}, cost:'18.9', report:'核查 47 条数据，纠正 3 处过期政策；素材库新增 14 条。'
+},
+{
+  id:'xingren', name:'行人', role:'分发官', dept:'studio', status:'online',
+  mission:'好内容发错了地方，等于没写。',
+  duties:[
+    '公众号草稿箱 → 主公确认 → 群发的发布流程执行。',
+    '多平台分发：朋友圈、社群、视频号，按平台特性改写。',
+    '发布后 24 小时回收数据：阅读、在看、转发、涨粉。',
+    '把数据写进周报，异常波动当天上报。'
+  ],
+  boundary:['未经确认绝不群发','不擅自改标题和封面','不做诱导分享'],
+  prompt:'你是主公（kaka）的分发官，花名行人，负责内容发布与数据回收。\n\n铁律：\n1）公众号一律「存草稿箱」，等主公人工确认后才群发。任何情况下不得自行发布。\n2）分发前按平台改写：朋友圈取最有画面感的一句、社群版加一句互动提问、视频号版控制在 3 句以内。\n3）发布后 24 小时回收四项数据：阅读数、在看数、转发数、新增关注；次日晚补齐。\n4）阅读低于近 30 天均值 60% 或高于 200%，当天上报，并给一句可能原因。\n5）不做诱导分享、不使用违规涨粉手段。\n\n汇报格式：一行结论 + 四项数据 + 一条建议。',
+  kb:['发布流程 SOP','各平台分发规范','历史数据看板'],
+  skills:['多平台改写','发布执行','数据回收','异常归因'],
+  memory:['发布前必须人工确认','平台规则要守，不做诱导分享','数据要看 24 小时窗口'],
+  okr:[{o:'分发效率与数据回传及时率',krs:[{t:'24 小时数据回传率 100%',p:96},{t:'单篇平均阅读环比 +15%',p:62},{t:'分发多平台覆盖率 100%',p:100}]}],
+  token:{used:38,cap:150}, cost:'11.4', report:'发布 21 篇全部走确认流程；社群版互动率比朋友圈高 2.3 倍。'
+},
+/* ---------- 旅游业务组 ---------- */
+{
+  id:'duwei', name:'都尉', role:'产品经理', dept:'travel', status:'online',
+  mission:'做一条客人一句话就能说清卖点的周边游线路。',
+  duties:[
+    '周边游线路策划：车程 ≤3 小时优先，2 日游为主。',
+    '每条线路给出：目标客群、一句话卖点、淡旺季价格带、可替换供应商。',
+    '控制行程密度，不做「什么都有一点」的大杂烩。',
+    '上线前做竞品对标与差异化校验。'
+  ],
+  boundary:['不定最终售价（交计调与财务）','不承诺未落实的接待资源','不做超出车队运力的产品'],
+  prompt:'你是主公（kaka）的产品经理，花名都尉，负责周边游线路策划。\n\n产品标准：\n1）半径优先：单程车程 ≤3 小时；主力形态为 2 日游，1 日游作为引流款。\n2）每条线路必须写清四项：目标客群（谁会在什么场景下买）、一句话卖点（客人能复述出来的那句）、淡旺季价格带、可替换供应商（至少 2 家备选）。\n3）行程密度要克制：一天不超过 3 个核心点，宁可少而精，不做大杂烩。\n4）上线前做竞品对标：同类产品卖什么价、主打什么、我们差异在哪。说不出差异就不立项。\n5）主动标注风险点：天气依赖度、政策限制、接待能力上限。\n\n输出结构：客群 → 卖点 → 行程骨架 → 成本区间 → 风险。',
+  kb:['周边游线路库','供应商名录','竞品价格监测'],
+  skills:['线路设计','客群画像','差异化定位','风险预判'],
+  memory:['周边游为主，车程3小时内','一句话卖点必须客人能复述','不做大杂烩行程'],
+  okr:[{o:'上线 3 条能打的 2 日游产品',krs:[{t:'3 条线路首月成团率 ≥60%',p:55},{t:'每条线路有 2 家备选供应商',p:90},{t:'竞品对标报告 1 份/线路',p:80}]}],
+  token:{used:68,cap:220}, cost:'20.4', report:'秋季温泉 2 日游定稿，完成 4 家竞品对标，卖点收敛为「一车直达不换乘」。'
+},
+{
+  id:'suancao', name:'算曹', role:'计调', dept:'travel', status:'busy',
+  mission:'行程能落地、报价能兜住，变更不许口头改价。',
+  duties:[
+    '供应商价格表维护：酒店、车队、餐厅、门票。',
+    '出报价前至少 3 家比价，输出标准行程单 + 成本明细。',
+    '行程变更必须同步成本表，重新出单人成本。',
+    '派单与导游协调，确认接待能力上限。'
+  ],
+  boundary:['不擅自承诺折扣','不改动已签约供应商条款','不替代财务做毛利判断'],
+  prompt:'你是主公（kaka）的计调，花名算曹，负责行程落地与报价。\n\n工作规范：\n1）维护供应商价格表：酒店、车队、餐厅、门票四类，每月至少更新 2 次，标注报价有效期。\n2）任何报价前先做 3 家比价，写明各自条件差异（含早/免退/押金）。\n3）输出两件套：标准行程单（客看）+ 成本明细表（内部），字段与「两日游成本核算表」保持一致。\n4）行程任何变更，必须同步更新成本表并重新计算单人成本，绝不口头改价。\n5）接待能力有上限就直说，不硬接；超限时给出替代方案。\n\n报价必须附一句风险提示：哪些项可能涨价、哪些项不可退。',
+  kb:['供应商价格表','两日游成本核算表.xlsx','标准行程单模板','车队运力表'],
+  skills:['成本核算','供应商比价','行程单编制','变更控制'],
+  memory:['报价必须拆八项','变更必须同步成本表','不接受口头改价'],
+  okr:[{o:'报价准确率与响应速度',krs:[{t:'报价差错 0 起',p:100},{t:'常规报价 4 小时内出',p:88},{t:'供应商价格表月更 2 次',p:75}]}],
+  token:{used:89,cap:240}, cost:'26.7', report:'出报价 11 份，平均 3.2 小时；温泉酒店周末价上浮 12%，已同步全部在售线路。'
+},
+{
+  id:'dianke', name:'典客', role:'客服官', dept:'travel', status:'offline',
+  mission:'把火气接住，把口径守住。',
+  duties:[
+    '客户咨询与客诉响应，先共情再给方案，单条不超过 120 字。',
+    '退款、改期严格按合同口径，不擅自承诺。',
+    '高频问题沉淀为话术库，每周更新。',
+    '超权限事项立即升级给主公。'
+  ],
+  boundary:['不擅自答应赔偿','不与客户争辩','不在公开评论区讨论个案'],
+  prompt:'你是主公（kaka）的客服官，花名典客，负责客户咨询与客诉处理。\n\n回复规范：\n1）先共情一句（承认对方的不便，不辩解），再给方案，单条不超过 120 字。\n2）退款、改期、赔偿严格按合同与平台规则口径，不擅自承诺任何超出权限的条件。\n3）超权限事项（金额、责任认定、媒体曝光风险）立即升级给主公，并附三条关键事实。\n4）不与客户争辩；不在公开评论区讨论个案细节。\n5）每条客诉记录：诉求、事实、依据条款、处理结果、是否升级。\n\n长期任务：把高频问题整理成话术库，每周新增不少于 5 条，标注适用场景。',
+  kb:['合同与退款条款','客诉案例库','话术库'],
+  skills:['客诉处理','情绪安抚','条款适用','话术沉淀'],
+  memory:['先共情再给方案','不擅自承诺赔偿','超权限必须升级'],
+  okr:[{o:'客诉一次解决率提升',krs:[{t:'一次解决率 ≥85%',p:72},{t:'平均响应 < 10 分钟',p:90},{t:'话术库周增 5 条',p:60}]}],
+  token:{used:44,cap:160}, cost:'13.2', report:'处理咨询 63 条、客诉 7 起，1 起升级（酒店超售），话术库新增 6 条。'
+},
+/* ---------- 生活层 ---------- */
+{
+  id:'bianshi', name:'辩士', role:'表达教练', dept:'life', status:'online',
+  mission:'让主公在镜头前、饭桌上、会议室里，都能一句话说到点上。',
+  duties:[
+    '口播稿打磨：90 秒版本 + 三个可替换开头。',
+    '指出具体问题：语速、停顿、信息密度、口头禅。',
+    '直播与演讲前的结构梳理与应变预案。',
+    '每次训练只改一个点，不贪多。'
+  ],
+  boundary:['不空夸、不说「很棒」','不改内容立场，只改表达','不做心理按摩'],
+  prompt:'你是主公（kaka）的表达教练，花名辩士。主公需要面对镜头做口播、也在行业场合讲话。\n\n训练方法：\n1）每次给一个 90 秒口播稿，外加三个可替换的开头（悬念式、结论式、场景式），让主公自己选。\n2）评价只说具体问题：哪一句语速赶、哪个停顿该留、哪段信息密度过高、哪个口头禅重复出现。不许说「很棒」「不错」这类空话。\n3）每次训练只聚焦一个改进点，改完再进下一个。\n4）给可执行的练习动作，例如：把这段读三遍，第二遍每句结尾停半秒。\n5）不改变内容立场，只优化表达结构。\n\n评估用三档：能听懂、能记住、想转发。目前目标是「能记住」。',
+  kb:['主公历史口播稿','直播复盘记录','表达问题清单'],
+  skills:['口播稿撰写','停顿与节奏','结构梳理','临场应变'],
+  memory:['要具体问题，不要空夸','一次只改一个点','三档评估：听懂/记住/转发'],
+  okr:[{o:'口播从「能听懂」到「能记住」',krs:[{t:'90 秒稿件平均信息点 ≤3 个',p:80},{t:'口头禅出现频次下降 50%',p:65},{t:'完成 8 次实战演练',p:50}]}],
+  token:{used:31,cap:120}, cost:'9.3', report:'完成 3 次口播打磨；主要问题：句尾上扬、信息点过密，已给停顿标记方案。'
+},
+/* ---------- 中枢 ---------- */
+{
+  id:'xiaodeng', name:'小灯', role:'贴身助理 · DOT', dept:'core', status:'online',
+  mission:'主公只管说，剩下的派活、跟进度、催人，都归我。',
+  duties:[
+    '接收待办与口头指令，判断该交给哪个岗位。',
+    '把模糊指令拆成可执行任务卡：负责人、交付物、截止日。',
+    '跟踪进度，超期或卡住主动提醒，不等主公问。',
+    '每天 21:00 给当日复盘，每周五汇总周报。'
+  ],
+  boundary:['不越权替主公做决策','不直接对外发言','不隐瞒坏消息'],
+  prompt:'你是主公（kaka）的贴身助理，名字叫小灯，是整个数字幕府的中枢连接器。\n\n你的核心任务：\n1）接收主公的待办、零散想法和口头指令——他经常分几次说完，你要主动拼完整，缺关键信息时一次问清，不要反复追问。\n2）判断该交给哪个岗位：内容类找掌书记/候风/丹青，成本报价找司仓/算曹，方向问题找军师，方案有风险找监军先过一遍。\n3）把指令拆成任务卡：任务名、唯一负责人、交付物形态、截止日、验收标准。拆不出来就先问一句。\n4）跟踪进度：超期、卡住、需要主公拍板的，主动提醒，不等他来问。\n5）每天 21:00 给当日复盘：完成了什么、卡在哪、明天先做哪件。每周五汇总全员周报。\n\n汇报风格：先结论，再清单，最后一句「需要你决定的是……」。不铺陈、不寒暄。',
+  kb:['主公待办清单','全员岗位档案','项目进度看板','历史决策记录'],
+  skills:['任务拆解','岗位路由','进度跟踪','日报汇总'],
+  memory:['主公指令简短，常分多次给','零散信息要主动拼全','只对主公汇报，不越权'],
+  okr:[{o:'让主公只需要做一个入口',krs:[{t:'任务路由准确率 ≥90%',p:86},{t:'超期提醒 100% 提前 1 天发出',p:94},{t:'日报准时率 100%',p:100}]}],
+  token:{used:57,cap:200}, cost:'17.1', report:'本周路由任务 34 件，误派 2 件已纠正；日报 7/7 准时。'
+}
+];
+
+/* ============ 初始任务与规则 ============ */
+const SEED_TASKS = [
+  {id:'t0',title:'「乐巴士 · 双十一」活动价核定（三档优惠）',owner:'sicang',status:'doing',pri:'P0',due:'10-31'},
+  {id:'t1',title:'补齐 11 月周边游选题池 12 条（含增量信息点）',owner:'houfeng',status:'todo',pri:'P1',due:'11-04'},
+  {id:'t2',title:'客诉话术库更新：退款与改期口径',owner:'dianke',status:'todo',pri:'P2',due:'11-06'},
+  {id:'t3',title:'「乐巴士 · 秋季温泉」主视觉两版方向',owner:'danqing',status:'doing',pri:'P0',due:'11-03'},
+  {id:'t4',title:'神农架 2 日游报价复核（含 3 家酒店比价）',owner:'suancao',status:'doing',pri:'P0',due:'11-03'},
+  {id:'t5',title:'《AI 帮我写行程单》初稿挑刺',owner:'jianjun',status:'doing',pri:'P1',due:'11-04'},
+  {id:'t6',title:'公众号推文《AI 帮我写行程单》初稿',owner:'zhangshuji',status:'review',pri:'P1',due:'11-02'},
+  {id:'t7',title:'Q4 内容排期表（红黄绿状态）',owner:'zhubu',status:'done',pri:'P1',due:'11-01'},
+  {id:'t8',title:'秋季温泉线路上线前竞品对标',owner:'duwei',status:'done',pri:'P2',due:'10-31'}
+];
+
+const SEED_RULES = [
+  {t:'选题必须有增量信息',s:'候风 · 复盘产出',c:'任何选题必须写出一句「读者看完比刷到之前多知道了什么」。写不出这句，直接换题；只有情绪没有信息的题，一律退回。'},
+  {t:'公众号一律先存草稿箱',s:'主公 · 硬规则',c:'所有推文先存草稿箱，等主公人工确认后才群发。任何岗位不得自行发布，也不得代按群发键。'},
+  {t:'报价必须拆八项且不许模糊',s:'司仓 · 复盘产出',c:'成本拆交通、住宿、门票、餐饮、导服、保险、佣金、税费八项；毛利率低于 15% 开头必须标「毛利预警」；禁止「大概」「区间」这类表述，缺数据要标假设值。'},
+  {t:'对外文案默认写成可直接复制的成品',s:'掌书记 · 复盘产出',c:'不留「此处补充」「待定」这类占位；一稿交出去，主公能直接复制提交或发布。'},
+  {t:'方案落地前先过监军',s:'主簿 · 流程规则',c:'涉及投入、对外发布、内容选题的方案，先由监军挑一遍漏洞，再进入执行；监军的反对意见必须逐条回应，不许沉默通过。'},
+  {t:'一周一复盘，结论必须写进规则',s:'小灯 · 机制',c:'每周五复盘三问：哪里做得好、哪里能改进、重做一次怎么更快更省 token。结论不写进规则页的，视为无效复盘。'}
+];
+
+/* ============ 状态 ============ */
+const LS_KEY='wb_kongming_workshop_v1';
+const EMP_MAP={}; EMPLOYEES.forEach(e=>EMP_MAP[e.id]=e);
+const DEPT_ORDER=['core','staff','studio','travel','life'];
+const SLOT={core:'HUB',staff:'A',studio:'B',travel:'C',life:'D'};
+const COLS=[
+  {k:'todo',n:'待派工',c:'#8C9AA9'},
+  {k:'doing',n:'进行中',c:'#E8B45A'},
+  {k:'review',n:'待验收',c:'#5AA9E6'},
+  {k:'done',n:'已完成',c:'#3FD9B0'}
+];
+
+function loadState(){
+  try{
+    const raw=localStorage.getItem(LS_KEY);
+    if(!raw) return null;
+    const s=JSON.parse(raw);
+    if(!s||!Array.isArray(s.tasks)||!Array.isArray(s.rules)) return null;
+    return s;
+  }catch(e){ return null }
+}
+let state = loadState() || {
+  tasks: SEED_TASKS.map(t=>({...t})),
+  rules: SEED_RULES.map(r=>({...r}))
+};
+function save(){ try{ localStorage.setItem(LS_KEY,JSON.stringify(state)) }catch(e){} }
+function esc(s){ return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])) }
+
+/* ============ 工位墙 ============ */
+function renderStats(){
+  const online=EMPLOYEES.filter(e=>e.status==='online').length;
+  const done=state.tasks.filter(t=>t.status==='done').length;
+  const open=state.tasks.filter(t=>t.status!=='done').length;
+  const used=EMPLOYEES.reduce((a,e)=>a+e.token.used,0);
+  const cap=EMPLOYEES.reduce((a,e)=>a+e.token.cap,0);
+  document.getElementById('stats').innerHTML=`
+    <div class="stat"><b>${EMPLOYEES.length}<i>人</i></b><small>数字员工 · 5 个部门</small></div>
+    <div class="stat"><b style="color:var(--jade)">${online}<i>/${EMPLOYEES.length}</i></b><small>在线 · 心跳每 15 分钟巡检</small></div>
+    <div class="stat"><b>${done}<i>件</i></b><small>本周已交付 · 在办 ${open} 件</small></div>
+    <div class="stat"><b>${used}<i>万</i></b><small>本月 token · 预算 ${cap} 万</small></div>`;
+}
+
+function empCard(e){
+  const d=DEPTS[e.dept];
+  const idx=EMPLOYEES.filter(x=>x.dept===e.dept).indexOf(e)+1;
+  const slot=SLOT[e.dept]+'-'+String(idx).padStart(2,'0');
+  const pct=Math.min(100,Math.round(e.token.used/e.token.cap*100));
+  const n=state.tasks.filter(t=>t.owner===e.id&&t.status!=='done').length;
+  return `<div class="emp" data-emp="${e.id}" style="--c:${d.color}">
+    <div class="slot">${slot}</div>
+    <div class="emp-top">
+      <div class="av">${e.name[0]}<span class="st ${e.status}"></span></div>
+      <div><div class="emp-name">${e.name}</div><div class="emp-role">${e.role}</div></div>
+    </div>
+    <div class="emp-miss">${e.mission}</div>
+    <div class="emp-foot"><span class="tk"><i style="width:${pct}%"></i></span><em>${n?n+' 在办':'空闲'}</em></div>
+  </div>`;
+}
+
+/* ============ 今天要处理 ============ */
+function dueKey(t){
+  const p=String(t.due).split('-');
+  if(p.length!==2) return null;
+  const m=+p[0], d=+p[1];
+  if(isNaN(m)||isNaN(d)) return null;
+  return m*100+d;
+}
+
+function renderToday(){
+  const now=new Date();
+  const todayKey=(now.getMonth()+1)*100+now.getDate();
+  const open=state.tasks.filter(t=>t.status!=='done');
+  const od=[], td=[], sn=[];
+  open.forEach(t=>{
+    const k=dueKey(t);
+    if(k===null) return;
+    let diff=k-todayKey;
+    if(diff>6000) diff-=10000;
+    if(diff<-6000) diff+=10000;
+    if(diff<0) od.push(t);
+    else if(diff===0) td.push(t);
+    else if(diff<=3) sn.push(t);
+  });
+  const byDue=(a,b)=>(dueKey(a)||0)-(dueKey(b)||0);
+  od.sort(byDue); td.sort(byDue); sn.sort(byDue);
+
+  const rows=[];
+  od.forEach(t=>rows.push({t,cls:'od',label:t.due+' 逾期',color:'#E4574C'}));
+  td.forEach(t=>rows.push({t,cls:'td',label:'今天到期',color:'#E8B45A'}));
+  sn.slice(0,3).forEach(t=>rows.push({t,cls:'sn',label:t.due,color:'#5AA9E6'}));
+
+  document.getElementById('todaySub').textContent=`逾期 ${od.length} 件 · 今日 ${td.length} 件 · 3 天内 ${sn.length} 件`;
+  document.getElementById('todayList').innerHTML = rows.length ? rows.map(r=>{
+    const e=EMP_MAP[r.t.owner];
+    return `<div class="td-item">
+      <span class="tagline" style="background:${r.color}"></span>
+      <span class="t">${esc(r.t.title)}</span>
+      <span class="who">${e?e.name:'未指派'}</span>
+      <span class="due ${r.cls}">${r.label}</span>
+      <button class="btn sm ghost" data-act="go" data-id="${r.t.id}">处理</button>
+    </div>`;
+  }).join('') : '<div class="td-none">今天没有待处理项，各工位都清空了。</div>';
+}
+
+function renderWall(q){
+  const kw=(q||'').trim().toLowerCase();
+  let html='';
+  DEPT_ORDER.forEach(dk=>{
+    const d=DEPTS[dk];
+    let list=EMPLOYEES.filter(e=>e.dept===dk);
+    if(kw) list=list.filter(e=>(e.name+e.role+e.mission+e.duties.join('')+e.kb.join('')).toLowerCase().includes(kw));
+    if(!list.length) return;
+    html+=`<div class="dept">
+      <div class="dept-h">
+        <div class="bar" style="background:${d.color}"></div>
+        <h2>${d.name}</h2><span class="en">${d.en}</span>
+        <span class="desc">${d.desc}</span>
+        <span class="cnt">${list.length} 个工位</span>
+      </div>
+      <div class="grid">${list.map(empCard).join('')}</div>
+    </div>`;
+  });
+  document.getElementById('wall').innerHTML = html || '<div class="empty">没有匹配的岗位</div>';
+}
+
+/* ============ 架构 ============ */
+function renderOrg(){
+  const LAYERS=[
+    {k:'core',idx:'HUB',t:'中枢 · 连接器',s:'主公只对接这一个入口'},
+    {k:'staff',idx:'LAYER 01',t:'幕僚室 · 大脑',s:'定方向、统进度、算账、挑刺'},
+    {k:'studio',idx:'LAYER 02',t:'内容 Studio · 执行层',s:'选题 → 主笔 → 设计 → 分发'},
+    {k:'travel',idx:'LAYER 03',t:'旅游业务组 · 交付',s:'线路 → 报价 → 接待'},
+    {k:'life',idx:'LAYER 04',t:'生活层 · 成长',s:'给自己请的教练'}
+  ];
+  document.getElementById('org').innerHTML=LAYERS.map((L,i)=>{
+    const d=DEPTS[L.k];
+    const list=EMPLOYEES.filter(e=>e.dept===L.k);
+    const conn=i? '<div class="conn"></div>' : '';
+    const tkCost=list.reduce((a,e)=>a+e.token.used,0);
+    return `${conn}<div class="layer" style="border-color:color-mix(in srgb,${d.color} 16%,transparent)">
+      <div class="layer-h"><span class="idx">${L.idx}</span><h3 style="color:${d.color}">${L.t}</h3><span>${L.s}</span><span style="margin-left:auto;font-family:var(--mono);font-size:10px;color:var(--tx3)">${list.length} 岗 · ${tkCost} 万 token</span></div>
+      <div class="mini-row">${list.map(e=>`
+        <div class="mini" data-emp="${e.id}" style="--c:${d.color}">
+          <span class="mav">${e.name[0]}</span>
+          <span><b style="display:block;line-height:1.2">${e.name}</b><small>${e.role}</small></span>
+        </div>`).join('')}</div>
+    </div>`;
+  }).join('');
+}
+
+/* ============ 看板 ============ */
+function taskCard(t){
+  const e=EMP_MAP[t.owner];
+  const d=e?DEPTS[e.dept]:DEPTS.staff;
+  const acts={todo:[['go','派工']],doing:[['go','送验收']],review:[['go','验收通过'],['back','退回']],done:[['retro','复盘']]}[t.status]||[];
+  return `<div class="task">
+    <div class="tt">${esc(t.title)}</div>
+    <div class="tm">
+      <span class="ow"><i style="background:${d.color}26;color:${d.color}">${e?e.name[0]:'?'}</i>${e?e.name:'待指派'}</span>
+      <span class="pri ${t.pri}">${t.pri}</span>
+      <span style="margin-left:auto">${t.due}</span>
+    </div>
+    <div class="acts">${acts.map(a=>`<button class="btn sm ghost" data-act="${a[0]}" data-id="${t.id}">${a[1]}</button>`).join('')}</div>
+  </div>`;
+}
+
+function renderBoard(){
+  document.getElementById('board').innerHTML=COLS.map(c=>{
+    const list=state.tasks.filter(t=>t.status===c.k);
+    return `<div class="col">
+      <div class="col-h"><span class="cd" style="background:${c.c}"></span><b>${c.n}</b><span>${list.length}</span></div>
+      ${list.map(taskCard).join('')||'<div class="empty">空</div>'}
+    </div>`;
+  }).join('');
+  const open=state.tasks.filter(t=>t.status!=='done').length;
+  const done=state.tasks.filter(t=>t.status==='done').length;
+  const od=state.tasks.filter(t=>{
+    if(t.status==='done') return false;
+    const parts=String(t.due).split('-');
+    if(parts.length!==2 || isNaN(+parts[0]) || isNaN(+parts[1])) return false;
+    const now=new Date(), m=now.getMonth()+1, d=now.getDate();
+    return (+parts[0]<m) || (+parts[0]===m && +parts[1]<d);
+  }).length;
+  document.getElementById('boardSum').textContent=`在办 ${open} 件 · 已完成 ${done} 件 · 超期 ${od} 件`;
+  save();
+}
+
+/* ============ 周报 ============ */
+function renderWeek(){
+  document.getElementById('week').innerHTML=EMPLOYEES.map(e=>{
+    const d=DEPTS[e.dept];
+    const doneN=state.tasks.filter(t=>t.owner===e.id&&t.status==='done').length;
+    return `<div class="wk-row" style="--c:${d.color}">
+      <div class="wk-who"><span class="mav">${e.name[0]}</span><span><b>${e.name} · ${e.role}</b><small>${d.name}</small></span></div>
+      <div>${e.okr.map(o=>`<div class="kr" style="margin-bottom:9px">
+          <div class="krt"><span style="color:var(--tx);font-size:11.5px">${o.o}</span></div>
+          ${o.krs.map(k=>`<div class="kr" style="margin-top:6px"><div class="krt"><span>${k.t}</span></div><div class="krline"><div class="krb"><i style="width:${k.p}%"></i></div><em>${k.p}%</em></div></div>`).join('')}
+        </div>`).join('')}</div>
+      <div class="wk-num">${e.token.used}<small>万 TOKEN · ¥${e.cost}</small></div>
+      <div class="wk-rep">${e.report}<div style="margin-top:6px;font-family:var(--mono);font-size:10px;color:var(--tx3)">交付 ${doneN} 件 · ${e.status==='online'?'在线':e.status==='busy'?'忙碌':'离线'}</div></div>
+    </div>`;
+  }).join('');
+}
+
+/* ============ 规则 ============ */
+function renderRules(){
+  document.getElementById('rules').innerHTML=state.rules.map((r,i)=>`
+    <div class="rule" data-i="${i}">
+      <div class="rule-h"><span class="n">R${String(i+1).padStart(2,'0')}</span><b>${esc(r.t)}</b>
+        <span class="src">${esc(r.s)}</span>
+        <button class="btn sm ghost" data-act="editrule" data-i="${i}">改</button>
+      </div>
+      <p>${esc(r.c)}</p>
+    </div>`).join('') || '<div class="empty">还没有规则。复盘结论写进来，才算闭环。</div>';
+}
+
+function renderAll(){ renderStats(); renderToday(); renderWall(document.getElementById('q').value); renderOrg(); renderBoard(); renderWeek(); renderRules(); }
+
+/* ============ 抽屉 ============ */
+let curEmp=null;
+function openEmp(id){
+  const e=EMP_MAP[id]; if(!e) return;
+  curEmp=id;
+  const d=DEPTS[e.dept];
+  document.getElementById('drawer').style.setProperty('--c',d.color);
+  const idx=EMPLOYEES.filter(x=>x.dept===e.dept).indexOf(e)+1;
+  const slot=SLOT[e.dept]+'-'+String(idx).padStart(2,'0');
+  const pct=Math.round(e.token.used/e.token.cap*100);
+  document.getElementById('drHead').innerHTML=`
+    <div class="av">${e.name[0]}<span class="st ${e.status}"></span></div>
+    <div>
+      <h2>${e.name} · ${e.role}</h2>
+      <div class="sub">${d.name} / ${slot} / ${e.status==='online'?'在线':e.status==='busy'?'忙碌':'离线'}</div>
+    </div>
+    <button class="x" id="drClose">×</button>`;
+  document.getElementById('drBody').innerHTML=`
+    <div class="dr-miss">${e.mission}</div>
+    <div class="blk"><div class="blk-h"><h4>岗位职责</h4><div class="ln"></div></div>
+      <ul>${e.duties.map(x=>`<li>${x}</li>`).join('')}</ul></div>
+    <div class="blk"><div class="blk-h"><h4>职责边界 · 不做什么</h4><div class="ln"></div></div>
+      <ul>${e.boundary.map(x=>`<li>${x}</li>`).join('')}</ul></div>
+    <div class="blk"><div class="blk-h"><h4>系统提示词 · 可直接粘贴</h4><div class="ln"></div>
+      <button class="btn sm" data-act="copy">复制</button></div>
+      <div class="pbox"><div class="pb-h"><span>SYSTEM PROMPT</span><span style="margin-left:auto">${e.prompt.length} 字</span></div>
+      <pre id="promptText">${esc(e.prompt)}</pre></div></div>
+    <div class="blk"><div class="blk-h"><h4>知识库</h4><div class="ln"></div></div>
+      <div class="tags">${e.kb.map(x=>`<span class="tag">${x}</span>`).join('')}</div></div>
+    <div class="blk"><div class="blk-h"><h4>技能库</h4><div class="ln"></div></div>
+      <div class="tags">${e.skills.map(x=>`<span class="tag">${x}</span>`).join('')}</div></div>
+    <div class="blk"><div class="blk-h"><h4>记忆 · 他记得关于主公的事</h4><div class="ln"></div></div>
+      <div class="tags">${e.memory.map(x=>`<span class="tag mem">${x}</span>`).join('')}</div></div>
+    <div class="blk"><div class="blk-h"><h4>OKR</h4><div class="ln"></div></div>
+      ${e.okr.map(o=>`<div style="margin-bottom:10px">
+        <div style="font-size:12.5px;margin-bottom:7px">${o.o}</div>
+        ${o.krs.map(k=>`<div class="kr" style="--c:${d.color}"><div class="krt"><span>${k.t}</span></div><div class="krline"><div class="krb"><i style="width:${k.p}%"></i></div><em>${k.p}%</em></div></div>`).join('')}
+      </div>`).join('')}</div>
+    <div class="blk"><div class="blk-h"><h4>本月消耗</h4><div class="ln"></div></div>
+      <div class="metrics">
+        <div><b>${e.token.used}<small>万 token</small></b><small>已用 / 预算 ${e.token.cap} 万</small></div>
+        <div><b>${pct}%</b><small>预算占用</small></div>
+        <div><b>¥${e.cost}</b><small>折算成本</small></div>
+      </div></div>
+    <div class="blk"><div class="blk-h"><h4>本周周报</h4><div class="ln"></div></div>
+      <p style="font-size:12.5px;color:var(--tx2);line-height:1.75">${e.report}</p></div>
+    <div class="blk"><div class="blk-h"><div class="ln"></div></div>
+      <div style="display:flex;gap:8px"><button class="btn sm" data-act="exportone">导出该岗位档案 .md</button></div></div>`;
+  document.getElementById('mask').classList.add('on');
+  document.getElementById('drawer').classList.add('on');
+}
+function closeDrawer(){
+  document.getElementById('mask').classList.remove('on');
+  document.getElementById('drawer').classList.remove('on');
+  curEmp=null;
+}
+
+/* ============ 弹窗 ============ */
+function closeModal(){ const m=document.getElementById('modal'); m.innerHTML=''; }
+function openTaskModal(){
+  const opts=EMPLOYEES.map(e=>`<option value="${e.id}">${e.name} · ${e.role}</option>`).join('');
+  document.getElementById('modal').innerHTML=`
+    <div class="modal-mask" data-close="1">
+      <div class="modal">
+        <h3>下达任务</h3>
+        <div class="mh">拆到岗位、给截止日——这就是一次最小闭环的起点。</div>
+        <div class="field"><label>任务内容</label><input id="ntTitle" placeholder="例：11 月温泉线路上新 3 条选题" autocomplete="off"></div>
+        <div class="field"><label>负责人</label><select id="ntOwner">${opts}</select></div>
+        <div style="display:flex;gap:10px">
+          <div class="field" style="flex:1"><label>优先级</label><select id="ntPri"><option>P0</option><option selected>P1</option><option>P2</option></select></div>
+          <div class="field" style="flex:1"><label>截止日</label><input id="ntDue" value="11-05" autocomplete="off"></div>
+        </div>
+        <div class="modal-foot"><button class="btn" data-close="1">取消</button><button class="btn primary" id="ntOk">派工</button></div>
+      </div>
+    </div>`;
+  setTimeout(()=>document.getElementById('ntTitle').focus(),50);
+}
+function openRetro(t){
+  document.getElementById('modal').innerHTML=`
+    <div class="modal-mask" data-close="1">
+      <div class="modal">
+        <h3>任务复盘</h3>
+        <div class="mh">${esc(t.title)}</div>
+        <div class="field"><label>复盘三问 · 写完直接写进规则</label>
+          <textarea id="rtText" style="width:100%;min-height:150px;background:rgba(0,0,0,.28);border:1px solid var(--line2);border-radius:9px;color:var(--tx);font-family:var(--sans);font-size:12.5px;line-height:1.8;padding:11px;outline:0;resize:vertical">1）做得好的：\n2）可以改进的：\n3）重做一次，怎么更快、更省 token：\n→ 结论（写成一条规则）：</textarea>
+        </div>
+        <div class="modal-foot"><button class="btn" data-close="1">取消</button><button class="btn primary" id="rtOk">写进规则</button></div>
+      </div>
+    </div>`;
+}
+
+/* ============ 导出 ============ */
+function download(name,text,mime){
+  const blob=new Blob([text],{type:(mime||'text/markdown')+';charset=utf-8'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob); a.download=name;
+  document.body.appendChild(a); a.click();
+  setTimeout(()=>{URL.revokeObjectURL(a.href); a.remove();},300);
+}
+function empMd(e){
+  const d=DEPTS[e.dept];
+  return `## ${e.name} · ${e.role}\n\n- **部门**：${d.name}（${d.en}）\n- **使命**：${e.mission}\n\n### 岗位职责\n${e.duties.map(x=>'- '+x).join('\n')}\n\n### 职责边界\n${e.boundary.map(x=>'- '+x).join('\n')}\n\n### 知识库\n${e.kb.map(x=>'- '+x).join('\n')}\n\n### 技能库\n${e.skills.map(x=>'- '+x).join('\n')}\n\n### 记忆\n${e.memory.map(x=>'- '+x).join('\n')}\n\n### OKR\n${e.okr.map(o=>'- O：'+o.o+'\n'+o.krs.map(k=>'  - KR：'+k.t+'（'+k.p+'%）').join('\n')).join('\n')}\n\n### 系统提示词\n\`\`\`\n${e.prompt}\n\`\`\`\n\n---\n`;
+}
+function exportAll(){
+  const head=`# 赛博孔明 · 数字幕府｜岗位档案全集\n\n> 生成时间：${new Date().toLocaleString('zh-CN')}\n> 共 ${EMPLOYEES.length} 个岗位，5 个部门。用法：把对应岗位的「系统提示词」粘进任意 AI 的会话开头，再附上知识库与记忆，它就是这个岗位的员工。\n\n`;
+  download('数字幕府_岗位档案全集.md', head+EMPLOYEES.map(empMd).join('\n'));
+}
+
+/* ============ 交互 ============ */
+let currentView='wall';
+function switchView(v){
+  currentView=v;
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.toggle('on',n.dataset.view===v));
+  document.querySelectorAll('.view').forEach(s=>s.classList.toggle('on',s.id==='view-'+v));
+  document.querySelector('main').scrollTop=0;
+}
+
+document.getElementById('nav').addEventListener('click',ev=>{
+  const it=ev.target.closest('.nav-item'); if(!it) return;
+  switchView(it.dataset.view);
+});
+
+document.getElementById('q').addEventListener('input',ev=>{
+  if(currentView!=='wall') switchView('wall');
+  renderWall(ev.target.value);
+});
+document.addEventListener('keydown',ev=>{
+  if(ev.key==='/' && document.activeElement.tagName!=='INPUT' && document.activeElement.tagName!=='TEXTAREA'){
+    ev.preventDefault(); document.getElementById('q').focus();
+  }
+  if(ev.key==='Escape'){ closeDrawer(); closeModal(); }
+});
+
+document.addEventListener('click',ev=>{
+  const emp=ev.target.closest('[data-emp]');
+  if(emp){ openEmp(emp.dataset.emp); return; }
+  if(ev.target.id==='mask' || ev.target.id==='drClose'){ closeDrawer(); return; }
+
+  const btn=ev.target.closest('[data-act]');
+  if(btn){
+    const act=btn.dataset.act;
+    if(act==='go'||act==='back'){
+      const t=state.tasks.find(x=>x.id===btn.dataset.id);
+      if(t){
+        t.status = act==='back' ? 'doing' : (t.status==='todo'?'doing':t.status==='doing'?'review':'done');
+        renderBoard(); renderStats(); renderToday();
+      }
+      return;
+    }
+    if(act==='retro'){
+      const t=state.tasks.find(x=>x.id===btn.dataset.id);
+      if(t) openRetro(t);
+      return;
+    }
+    if(act==='copy'){
+      const txt=document.getElementById('promptText').textContent;
+      navigator.clipboard.writeText(txt).then(()=>{
+        btn.textContent='已复制'; setTimeout(()=>btn.textContent='复制',1400);
+      }).catch(()=>{
+        const ta=document.createElement('textarea'); ta.value=txt; document.body.appendChild(ta);
+        ta.select(); document.execCommand('copy'); ta.remove();
+        btn.textContent='已复制'; setTimeout(()=>btn.textContent='复制',1400);
+      });
+      return;
+    }
+    if(act==='exportone'){
+      const e=EMP_MAP[curEmp]; if(e) download(e.name+'_'+e.role+'_岗位档案.md', empMd(e));
+      return;
+    }
+    if(act==='editrule'){
+      const i=+btn.dataset.i; const r=state.rules[i];
+      const card=btn.closest('.rule');
+      card.innerHTML=`<div class="rule-h"><span class="n">R${String(i+1).padStart(2,'0')}</span><b>正在修改</b>
+        <span class="src">${esc(r.s)}</span></div>
+        <div class="field"><label>规则名</label><input id="rt_title" value="${esc(r.t)}" style="width:100%;height:34px;border-radius:8px;background:rgba(0,0,0,.28);border:1px solid var(--line2);color:var(--tx);font-family:inherit;font-size:12.5px;padding:0 10px;outline:0"></div>
+        <textarea id="rt_c">${esc(r.c)}</textarea>
+        <div style="display:flex;gap:8px;margin-top:9px;justify-content:flex-end">
+          <button class="btn sm" data-act="rulecancel" data-i="${i}">取消</button>
+          <button class="btn sm primary" data-act="rulesave" data-i="${i}">保存</button>
+        </div>`;
+      return;
+    }
+    if(act==='rulesave'){
+      const i=+btn.dataset.i;
+      state.rules[i].t=document.getElementById('rt_title').value.trim()||state.rules[i].t;
+      state.rules[i].c=document.getElementById('rt_c').value;
+      save(); renderRules(); return;
+    }
+    if(act==='rulecancel'){ renderRules(); return; }
+  }
+
+  // modal
+  const closer=ev.target.closest('[data-close]');
+  if(closer && (closer.classList.contains('modal-mask') || closer.tagName==='BUTTON')){ closeModal(); return; }
+  if(ev.target.id==='ntOk'){
+    const title=document.getElementById('ntTitle').value.trim();
+    if(!title){ document.getElementById('ntTitle').focus(); return; }
+    state.tasks.unshift({
+      id:'t'+Date.now(),
+      title,
+      owner:document.getElementById('ntOwner').value,
+      status:'todo',
+      pri:document.getElementById('ntPri').value,
+      due:document.getElementById('ntDue').value.trim()||'待定'
+    });
+    closeModal(); renderBoard(); renderStats(); renderToday();
+    switchView('board');
+    return;
+  }
+  if(ev.target.id==='rtOk'){
+    const c=document.getElementById('rtText').value.trim();
+    if(c){
+      state.rules.unshift({t:'复盘结论 · '+new Date().toLocaleDateString('zh-CN'),s:'小灯 · 复盘产出',c});
+      save(); renderRules();
+    }
+    closeModal(); switchView('week');
+    return;
+  }
+});
+
+document.getElementById('btnNew').addEventListener('click',openTaskModal);
+document.getElementById('btnNew2').addEventListener('click',openTaskModal);
+document.getElementById('btnExport').addEventListener('click',exportAll);
+
+document.getElementById('btnBackup').addEventListener('click',()=>{
+  const stamp=new Date().toISOString().slice(0,10).replace(/-/g,'');
+  download('数字幕府_备份_'+stamp+'.json', JSON.stringify({version:1, exportedAt:new Date().toISOString(), tasks:state.tasks, rules:state.rules}, null, 2), 'application/json');
+});
+document.getElementById('btnRestore').addEventListener('click',()=>document.getElementById('fileImport').click());
+document.getElementById('fileImport').addEventListener('change',ev=>{
+  const f=ev.target.files && ev.target.files[0];
+  if(!f) return;
+  const reader=new FileReader();
+  reader.onload=()=>{
+    try{
+      const d=JSON.parse(String(reader.result));
+      if(!d || !Array.isArray(d.tasks)) throw new Error('bad');
+      state.tasks=d.tasks.map(t=>({id:t.id||('t'+Math.random().toString(36).slice(2)),title:t.title||'(无标题)',owner:t.owner||'xiaodeng',status:t.status||'todo',pri:t.pri||'P2',due:t.due||'待定'}));
+      state.rules=Array.isArray(d.rules)?d.rules:state.rules;
+      save(); renderAll();
+      alert('已恢复 '+state.tasks.length+' 条任务、'+state.rules.length+' 条规则');
+    }catch(err){ alert('导入失败：这不是本工作台导出的备份文件'); }
+    ev.target.value='';
+  };
+  reader.readAsText(f,'utf-8');
+});
+document.getElementById('btnRule').addEventListener('click',()=>{
+  state.rules.unshift({t:'新规则',s:'主公 · 手动添加',c:'在这里写清楚：什么情况下必须怎么做，违反了怎么处理。'});
+  save(); renderRules();
+});
+document.getElementById('btnReset').addEventListener('click',()=>{
+  if(!confirm('重置为初始演示数据？你自己加的任务和规则会被清空。')) return;
+  state={tasks:SEED_TASKS.map(t=>({...t})),rules:SEED_RULES.map(r=>({...r}))};
+  save(); renderAll();
+});
+
+renderAll();
+</script>
+</body>
+</html>
