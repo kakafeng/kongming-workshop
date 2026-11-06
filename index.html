@@ -1044,6 +1044,8 @@ function closeDrawer(){
 function closeModal(){ const m=document.getElementById('modal'); m.innerHTML=''; }
 function openTaskModal(){
   const opts=EMPLOYEES.map(e=>`<option value="${e.id}">${e.name} · ${e.role}</option>`).join('');
+  const dd=new Date(Date.now()+3*86400000);
+  const dueDef=(dd.getMonth()+1)+'-'+String(dd.getDate()).padStart(2,'0');
   document.getElementById('modal').innerHTML=`
     <div class="modal-mask" data-close="1">
       <div class="modal">
@@ -1053,12 +1055,12 @@ function openTaskModal(){
         <div class="field"><label>负责人</label><select id="ntOwner">${opts}</select></div>
         <div style="display:flex;gap:10px">
           <div class="field" style="flex:1"><label>优先级</label><select id="ntPri"><option>P0</option><option selected>P1</option><option>P2</option></select></div>
-          <div class="field" style="flex:1"><label>截止日</label><input id="ntDue" value="11-05" autocomplete="off"></div>
+          <div class="field" style="flex:1"><label>截止日</label><input id="ntDue" value="${dueDef}" autocomplete="off"></div>
         </div>
         <div class="modal-foot"><button class="btn" data-close="1">取消</button><button class="btn primary" id="ntOk">派工</button></div>
       </div>
     </div>`;
-  setTimeout(()=>document.getElementById('ntTitle').focus(),50);
+  setTimeout(()=>{const el=document.getElementById('ntTitle'); if(el) el.focus();},50);
 }
 function openRetro(t){
   document.getElementById('modal').innerHTML=`
@@ -1128,7 +1130,7 @@ document.addEventListener('click',ev=>{
       const t=state.tasks.find(x=>x.id===btn.dataset.id);
       if(t){
         t.status = act==='back' ? 'doing' : (t.status==='todo'?'doing':t.status==='doing'?'review':'done');
-        renderBoard(); renderStats(); renderToday();
+        save(); renderAll();
       }
       return;
     }
@@ -1174,10 +1176,10 @@ document.addEventListener('click',ev=>{
     if(act==='rulecancel'){ renderRules(); return; }
   }
 
-  // modal
-  const closer=ev.target.closest('[data-close]');
-  if(closer && (closer.classList.contains('modal-mask') || closer.tagName==='BUTTON')){ closeModal(); return; }
-  if(ev.target.id==='ntOk'){
+  // modal：仅「点遮罩空白处」或「点取消按钮」才关闭；弹窗内部点击一律放行
+  if(ev.target.classList && ev.target.classList.contains('modal-mask')){ closeModal(); return; }
+  if(ev.target.closest && ev.target.closest('button[data-close]')){ closeModal(); return; }
+  if(ev.target.closest && ev.target.closest('#ntOk')){
     const title=document.getElementById('ntTitle').value.trim();
     if(!title){ document.getElementById('ntTitle').focus(); return; }
     state.tasks.unshift({
@@ -1188,11 +1190,12 @@ document.addEventListener('click',ev=>{
       pri:document.getElementById('ntPri').value,
       due:document.getElementById('ntDue').value.trim()||'待定'
     });
-    closeModal(); renderBoard(); renderStats(); renderToday();
+    save();
+    closeModal(); renderAll();
     switchView('board');
     return;
   }
-  if(ev.target.id==='rtOk'){
+  if(ev.target.closest && ev.target.closest('#rtOk')){
     const c=document.getElementById('rtText').value.trim();
     if(c){
       state.rules.unshift({t:'复盘结论 · '+new Date().toLocaleDateString('zh-CN'),s:'小灯 · 复盘产出',c});
